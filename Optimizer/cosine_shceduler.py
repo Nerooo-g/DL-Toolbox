@@ -1,4 +1,6 @@
 class CosineScheduler:
+    """This scheduler first make the learning rate grow linearly from zero to the maximum. Then it will gradually reduce
+    by cosine anneal which must specify total steps."""
     def __init__(self, optimizer: torch.optim.Optimizer,
                  warmup, max_lr: float, total_steps):
         self._optimizer = optimizer
