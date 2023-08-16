@@ -12,6 +12,7 @@ class CosineScheduler:
         self.warmup = warmup
         self._step = 0
         self.max_lr = max_lr
+        self.total_steps = total_steps
 
     def step(self):
         self._step += 1
@@ -26,6 +27,9 @@ class CosineScheduler:
 
     def warmup_func(self):
         return self.max_lr * self._step / self.warmup
+
+    def test_linear_anneal(self):
+        return self.max_lr-((self._step - self.warmup) * self.max_lr / (self.total_steps - self.warmup))
 
     def zero_grad(self):
         self._optimizer.zero_grad()
