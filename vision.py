@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch.nn
 
-from Optimizer.cosine_shceduler import CosineScheduler
+from optimizer.cosine_shceduler import CosineScheduler
 import os
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
