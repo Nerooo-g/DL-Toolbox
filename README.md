@@ -3,21 +3,12 @@ This is a repository which serves for developing deep learning, and it's going t
 
 Feel free to use it :)
 
-License
+## Reference
+[Relative Position Embedding](https://github.com/evelinehong/Transformer_Relative_Position_PyTorch)
 
-Copyright [2023] [Kalis]
+[Transformer Model](https://github.com/hyunwoongko/transformer)
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+[ReZero](https://github.com/majumderb/rezero/tree/master)
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-This project contains source code from Hyunwoong Ko's project
-(https://github.com/hyunwoongko/transformer) licensed under Apache 2.0 License.
+## License
+This project is licensed under the Apache License - see the [LICENSE](LICENSE) file for details.

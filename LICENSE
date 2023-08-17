@@ -14,3 +14,6 @@ limitations under the License.
 
 This project contains source code from Hyunwoong Ko's project
 (https://github.com/hyunwoongko/transformer) licensed under Apache 2.0 License.
+
+This project contains source code from lucidrains's project
+(https://github.com/lucidrains/rotary-embedding-torch) licensed under MIT License.
