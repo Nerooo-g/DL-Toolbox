@@ -2,8 +2,17 @@ import torch
 
 
 class CosineScheduler:
-    """This scheduler first make the learning rate grow linearly from zero to the maximum. Then it will gradually reduce
-    by cosine anneal which must specify total steps."""
+    """
+    Implements a warmup scheduler that linearly increases LR from 0 to max,
+    followed by a cosine annealing schedule.
+
+    Args:
+        optimizer (torch.optim.Optimizer): Optimizer instance to schedule.
+        warmup (int): Number of warmup steps.
+        max_lr (float): Maximum learning rate to use.
+        total_steps (int): Total number of steps including warmup.
+
+    """
 
     def __init__(self, optimizer: torch.optim.Optimizer,
                  warmup, max_lr: float, total_steps):

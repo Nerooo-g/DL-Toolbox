@@ -7,7 +7,23 @@ from models.transformer.encoder import Encoder
 
 
 class Transformer(nn.Module):
+    """
+    Transformer model from Attention is All You Need paper.
 
+    Args:
+        enc_size (int): Source class size.
+        dec_size (int): Target class size.
+        d_model (int): Embedding dimension size.
+        ffn_hidden (int): Feedforward hidden layer size.
+        n_head (int): Number of attention heads.
+        n_layers (int): Number of encoder/decoder layers.
+        drop_prob (float): Dropout probability.
+        norm_type (str): Type of layer normalization.
+        pe (str): Positional encoding type.
+        tie_emb (bool): Tie encoder/decoder embeddings.
+        pad_idx (int): Padding index.
+
+    """
     def __init__(self, enc_size, dec_size, d_model, ffn_hidden, n_head, n_layers, drop_prob, norm_type='post',
                  pe='absolute', tie_emb=False, pad_idx=0, *args, **kwargs):
         super().__init__(*args, **kwargs)

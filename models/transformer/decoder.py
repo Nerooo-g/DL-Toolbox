@@ -8,7 +8,21 @@ from models.transformer.abs_pe import PositionalEncoding
 
 
 class DecoderLayer(nn.Module):
+    """
+    Single decoder layer in a transformer decoder.
 
+    Performs multi-head self-attention, encoder-decoder attention, and
+    position-wise feedforward operations. Supports layer normalization.
+
+    Args:
+        d_model (int): Embedding dimension size.
+        ffn_hidden (int): Feedforward network hidden layer size.
+        n_head (int): Number of attention heads.
+        drop_prob (float): Dropout probability.
+        norm_type (str): Type of layer normalization, 'pre' or 'post'.
+        pe (str): Positional encoding type, 'rotary', 'relative' or 'absolute'.
+
+    """
     def __init__(self, d_model, ffn_hidden, n_head, drop_prob, norm_type, pe='absolute', *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert norm_type in ('pre', 'post', 'rezero'), \
@@ -55,7 +69,21 @@ class DecoderLayer(nn.Module):
 
 
 class Decoder(nn.Module):
+    """
+    Transformer decoder module.
 
+    Args:
+        dec_size (int): Target vocabulary size.
+        d_model (int): Embedding dimension size.
+        ffn_hidden (int): Feedforward hidden layer size.
+        n_head (int): Number of attention heads.
+        n_layers (int): Number of decoder layers.
+        drop_prob (float): Dropout probability.
+        norm_type (str): Type of layer normalization.
+        pe (str): Positional encoding type.
+        tie_emb (bool): Tie input embedding matrix as decoder embedding.
+
+    """
     def __init__(self, dec_size, d_model, ffn_hidden, n_head, n_layers, drop_prob, norm_type='post', pe='absolute',
                  tie_emb=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -70,7 +98,7 @@ class Decoder(nn.Module):
                                                   drop_prob=drop_prob, norm_type=norm_type, pe=pe)
                                      for _ in range(n_layers)])
         if pe == 'absolute':
-            self.abs_pe = PositionalEncoding(d_model=d_model, dropout=drop_prob, max_len=2048)
+            self.abs_pe = PositionalEncoding(d_model=d_model, drop_prob=drop_prob, max_len=2048)
         else:
             self.register_parameter("abs_pe", None)
         self.fc = nn.Linear(d_model, dec_size)
