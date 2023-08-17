@@ -100,6 +100,7 @@ class RotaryEmbedding(nn.Module):
         self.cache = dict()
         self.cache_scale = dict()
         self.freqs = nn.Parameter(freqs, requires_grad=learned_freq)
+
         # interpolation factors
 
         assert interpolate_factor >= 1.
@@ -120,12 +121,11 @@ class RotaryEmbedding(nn.Module):
         return (torch.arange(seq_len, device=device, dtype=dtype) + offset) / self.interpolate_factor
 
     def rotate_queries_or_keys(self, t, seq_dim=-2, offset=0):
-        assert not self.use_xpos, ('you must use `.rotate_queries_and_keys` method instead and pass in both queries '
-                                   'and keys, for length extrapolatable rotary embeddings')
+        assert not self.use_xpos, 'you must use `.rotate_queries_and_keys` method instead and pass in both queries and keys, for length extrapolatable rotary embeddings'
         device, dtype, seq_len = t.device, t.dtype, t.shape[seq_dim]
         freqs = self.forward(lambda: self.get_seq_pos(seq_len, device=device, dtype=dtype, offset=offset),
                              cache_key=f'freqs:{seq_len}|offset:{offset}')
-        return apply_rotary_emb(freqs, t)
+        return apply_rotary_emb(freqs.detach(), t)
 
     def rotate_queries_and_keys(self, q, k, seq_dim=-2):
         assert self.use_xpos
@@ -164,7 +164,7 @@ class RotaryEmbedding(nn.Module):
         if callable(t):
             t = t()
 
-        freqs = self.freqs.detach()
+        freqs = self.freqs
         freqs = freqs.cuda()
         freqs = torch.einsum('..., f -> ... f', t.type(freqs.dtype), freqs)
         freqs = repeat(freqs, '... n -> ... (n r)', r=2)

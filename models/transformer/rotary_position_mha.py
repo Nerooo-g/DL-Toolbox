@@ -12,11 +12,11 @@ class ScaleDotProductAttention(nn.Module):
     Value : every sentence same with Key (encoder)
     """
 
-    def __init__(self, dim, pe=True, learned=True):
+    def __init__(self, dim, pe=True):
         super(ScaleDotProductAttention, self).__init__()
         self.softmax = nn.Softmax(dim=-1)
         if pe:
-            self.rpe = RotaryEmbedding(dim, learned_freq=learned)
+            self.rpe = RotaryEmbedding(dim)
         else:
             self.register_parameter('rpe', None)
 
