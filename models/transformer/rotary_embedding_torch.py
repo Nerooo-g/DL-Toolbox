@@ -164,7 +164,7 @@ class RotaryEmbedding(nn.Module):
         if callable(t):
             t = t()
 
-        freqs = self.freqs
+        freqs = self.freqs.detach()
         freqs = freqs.cuda()
         freqs = torch.einsum('..., f -> ... f', t.type(freqs.dtype), freqs)
         freqs = repeat(freqs, '... n -> ... (n r)', r=2)
