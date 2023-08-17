@@ -69,7 +69,7 @@ class RPEMultiHeadAttention(nn.Module):
         attn = (attn1 + attn2) / self.scale.cuda()
 
         if mask is not None:
-            attn = attn.masked_fill(mask == 0, -1e10)
+            attn = attn.masked_fill(mask == 0, -1e4)
 
         attn = torch.softmax(attn, dim=-1)
 

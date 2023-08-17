@@ -30,6 +30,7 @@ class DecoderLayer(nn.Module):
         if self.norm_type == 'pre' or self.norm_type == 'post':
             self.norm1 = LayerNorm(d_model=d_model)
             self.norm2 = LayerNorm(d_model=d_model)
+            self.norm3 = LayerNorm(d_model=d_model)
         else:
             self.res_weight = nn.Parameter(torch.Tensor([0]), requires_grad=True)
 
