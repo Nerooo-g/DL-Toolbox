@@ -23,7 +23,9 @@ class EncoderLayer(nn.Module):
         pe (str): Positional encoding type, 'rotary', 'relative' or 'absolute'.
 
     """
-    def __init__(self, d_model, ffn_hidden, n_head, drop_prob, norm_type, pe='absolute', *args, **kwargs):
+
+    def __init__(self, d_model, ffn_hidden, n_head, drop_prob, norm_type, pe='absolute', norm_bias=True, *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         assert norm_type in ('pre', 'post', 'rezero'), \
             "norm_type must be 'pre', 'post' or 'rezero'"
@@ -39,8 +41,8 @@ class EncoderLayer(nn.Module):
         self.dropout2 = nn.Dropout(p=drop_prob)
         self.norm_type = norm_type  # post, pre, or rezero
         if self.norm_type == 'pre' or self.norm_type == 'post':
-            self.norm1 = LayerNorm(d_model=d_model)
-            self.norm2 = LayerNorm(d_model=d_model)
+            self.norm1 = LayerNorm(d_model=d_model, bias=norm_bias)
+            self.norm2 = LayerNorm(d_model=d_model, bias=norm_bias)
         else:
             self.res_weight = nn.Parameter(torch.Tensor([0]), requires_grad=True)
 
@@ -52,6 +54,8 @@ class EncoderLayer(nn.Module):
             x_pre_norm = self.norm1(x)
             x = self.dropout1(self.attention(query=x_pre_norm, key=x_pre_norm, value=x_pre_norm, mask=src_mask)) + x
             x = self.dropout2(self.ffn(self.norm2(x))) + x
+            # x = self.attention(query=x_pre_norm, key=x_pre_norm, value=x_pre_norm, mask=src_mask) + x
+            # x = self.ffn(self.norm2(x)) + x
         else:
             x = self.dropout1(self.attention(query=x, key=x, value=x, mask=src_mask) * self.res_weight) + x
             x = self.dropout2(self.ffn(x) * self.res_weight) + x
@@ -74,8 +78,9 @@ class Encoder(nn.Module):
         tie_emb (bool): Tie input embedding matrix as decoder embedding.
 
     """
+
     def __init__(self, enc_size, d_model, ffn_hidden, n_head, n_layers, drop_prob, norm_type='post', pe='absolute',
-                 tie_emb=False, *args, **kwargs):
+                 tie_emb=False, norm_bias=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if tie_emb:
             self.register_parameter("emb", None)
@@ -85,12 +90,16 @@ class Encoder(nn.Module):
         self.layers = nn.ModuleList([EncoderLayer(d_model=d_model,
                                                   ffn_hidden=ffn_hidden,
                                                   n_head=n_head,
-                                                  drop_prob=drop_prob, norm_type=norm_type, pe=pe)
+                                                  drop_prob=drop_prob, norm_type=norm_type, pe=pe, norm_bias=norm_bias)
                                      for _ in range(n_layers)])
         if pe == 'absolute':
             self.abs_pe = PositionalEncoding(d_model=d_model, drop_prob=drop_prob, max_len=2048)
         else:
             self.register_parameter("abs_pe", None)
+        if norm_type == 'pre':
+            self.final_norm = LayerNorm(d_model, bias=norm_bias)
+        else:
+            self.register_parameter("final_norm", None)
 
     def forward(self, x, src_mask):
         if self.emb is not None:
@@ -101,4 +110,6 @@ class Encoder(nn.Module):
             x = self.dropout(x)
         for layer in self.layers:
             x = layer(x, src_mask)
+        if self.final_norm is not None:
+            x = self.final_norm(x)
         return x

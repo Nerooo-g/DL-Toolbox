@@ -23,7 +23,7 @@ class DecoderLayer(nn.Module):
         pe (str): Positional encoding type, 'rotary', 'relative' or 'absolute'.
 
     """
-    def __init__(self, d_model, ffn_hidden, n_head, drop_prob, norm_type, pe='absolute', *args, **kwargs):
+    def __init__(self, d_model, ffn_hidden, n_head, drop_prob, norm_type, pe='absolute',norm_bias=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert norm_type in ('pre', 'post', 'rezero'), \
             "norm_type must be 'pre', 'post' or 'rezero'"
@@ -42,9 +42,9 @@ class DecoderLayer(nn.Module):
         self.dropout3 = nn.Dropout(p=drop_prob)
         self.norm_type = norm_type  # post, pre, or rezero
         if self.norm_type == 'pre' or self.norm_type == 'post':
-            self.norm1 = LayerNorm(d_model=d_model)
-            self.norm2 = LayerNorm(d_model=d_model)
-            self.norm3 = LayerNorm(d_model=d_model)
+            self.norm1 = LayerNorm(d_model=d_model,bias=norm_bias)
+            self.norm2 = LayerNorm(d_model=d_model,bias=norm_bias)
+            self.norm3 = LayerNorm(d_model=d_model,bias=norm_bias)
         else:
             self.res_weight = nn.Parameter(torch.Tensor([0]), requires_grad=True)
 
@@ -59,6 +59,10 @@ class DecoderLayer(nn.Module):
                 query=x_pre_norm, key=x_pre_norm, value=x_pre_norm, mask=trg_mask)) + dec
             x = self.dropout2(self.enc_dec_attention(query=self.norm2(x), key=enc, value=enc, mask=src_mask)) + x
             x = self.dropout3(self.ffn(self.norm3(x))) + x
+            # x = self.self_attention(
+            #     query=x_pre_norm, key=x_pre_norm, value=x_pre_norm, mask=trg_mask) + dec
+            # x = self.enc_dec_attention(query=self.norm2(x), key=enc, value=enc, mask=src_mask) + x
+            # x = self.ffn(self.norm3(x)) + x
         else:
             x = self.dropout1(self.self_attention(
                 query=dec, key=dec, value=dec, mask=trg_mask) * self.res_weight) + dec
@@ -85,7 +89,7 @@ class Decoder(nn.Module):
 
     """
     def __init__(self, dec_size, d_model, ffn_hidden, n_head, n_layers, drop_prob, norm_type='post', pe='absolute',
-                 tie_emb=False, *args, **kwargs):
+                 tie_emb=False,norm_bias=True,*args, **kwargs):
         super().__init__(*args, **kwargs)
         if tie_emb:
             self.register_parameter("emb", None)
@@ -95,12 +99,16 @@ class Decoder(nn.Module):
         self.layers = nn.ModuleList([DecoderLayer(d_model=d_model,
                                                   ffn_hidden=ffn_hidden,
                                                   n_head=n_head,
-                                                  drop_prob=drop_prob, norm_type=norm_type, pe=pe)
+                                                  drop_prob=drop_prob, norm_type=norm_type, pe=pe,norm_bias=norm_bias)
                                      for _ in range(n_layers)])
         if pe == 'absolute':
             self.abs_pe = PositionalEncoding(d_model=d_model, drop_prob=drop_prob, max_len=2048)
         else:
             self.register_parameter("abs_pe", None)
+        if norm_type == 'pre':
+            self.final_norm = LayerNorm(d_model, bias=norm_bias)
+        else:
+            self.register_parameter("final_norm", None)
         self.fc = nn.Linear(d_model, dec_size)
 
     def forward(self, trg, enc_hid, trg_mask, src_mask):
@@ -112,5 +120,7 @@ class Decoder(nn.Module):
             trg = self.dropout(trg)
         for layer in self.layers:
             trg = layer(trg, enc_hid, trg_mask, src_mask)
+        if self.final_norm is not None:
+            trg = self.final_norm(trg)
         trg = self.fc(trg)
         return trg
