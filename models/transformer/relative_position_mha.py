@@ -32,7 +32,7 @@ class RPEMultiHeadAttention(nn.Module):
         self.hid_dim = d_model
         self.n_heads = n_head
         self.head_dim = d_model
-        self.max_relative_position = 2
+        self.max_relative_position = 4
 
         self.relative_position_k = RelativePosition(self.head_dim, self.max_relative_position)
         self.relative_position_v = RelativePosition(self.head_dim, self.max_relative_position)
