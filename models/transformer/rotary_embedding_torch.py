@@ -125,7 +125,7 @@ class RotaryEmbedding(nn.Module):
         device, dtype, seq_len = t.device, t.dtype, t.shape[seq_dim]
         freqs = self.forward(lambda: self.get_seq_pos(seq_len, device=device, dtype=dtype, offset=offset),
                              cache_key=f'freqs:{seq_len}|offset:{offset}')
-        return apply_rotary_emb(freqs.detach(), t)
+        return apply_rotary_emb(freqs, t)
 
     def rotate_queries_and_keys(self, q, k, seq_dim=-2):
         assert self.use_xpos

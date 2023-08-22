@@ -24,8 +24,9 @@ class Transformer(nn.Module):
         pad_idx (int): Padding index.
 
     """
+
     def __init__(self, enc_size, dec_size, d_model, ffn_hidden, n_head, n_layers, drop_prob, norm_type='post',
-                 pe='absolute', tie_emb=False, pad_idx=0,norm_bias=True,*args, **kwargs):
+                 pe='absolute', tie_emb=False, pad_idx=0, norm_bias=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pad_idx = pad_idx
         if tie_emb:
@@ -35,11 +36,11 @@ class Transformer(nn.Module):
             self.register_parameter("emb", None)
         self.encoder = Encoder(enc_size=enc_size, d_model=d_model, n_head=n_head, ffn_hidden=ffn_hidden,
                                drop_prob=drop_prob,
-                               n_layers=n_layers, norm_type=norm_type, pe=pe, tie_emb=tie_emb,norm_bias=norm_bias)
+                               n_layers=n_layers, norm_type=norm_type, pe=pe, tie_emb=tie_emb, norm_bias=norm_bias)
 
         self.decoder = Decoder(dec_size=dec_size, d_model=d_model, n_head=n_head, ffn_hidden=ffn_hidden,
                                drop_prob=drop_prob,
-                               n_layers=n_layers, norm_type=norm_type, pe=pe, tie_emb=tie_emb,norm_bias=norm_bias)
+                               n_layers=n_layers, norm_type=norm_type, pe=pe, tie_emb=tie_emb, norm_bias=norm_bias)
 
     @autocast()
     def forward(self, src, trg):
