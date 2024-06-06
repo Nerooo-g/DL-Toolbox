@@ -54,19 +54,14 @@ class Transformer(nn.Module):
         output = self.decoder(trg, enc_hid, trg_mask,src_mask)
         return output
 def make_src_mask(src, pad_idx=0):
-    # 直接使用广播机制生成掩码
     src_mask = (src != pad_idx).unsqueeze(1).unsqueeze(2)
-    # 将布尔值转换为浮点数，并直接设置掩码值
     src_mask = (1-src_mask.half()) * -1e4+1
     return src_mask
 
 def make_trg_mask(trg, pad_idx=0):
-    # 生成目标序列的掩码
     trg_pad_mask = (trg != pad_idx).unsqueeze(1).unsqueeze(3)
     trg_len = trg.size(1)
-    # 使用广播机制创建下三角矩阵
     trg_sub_mask = torch.tril(torch.ones((trg_len, trg_len), device=trg.device, dtype=torch.bool))
     trg_mask = trg_pad_mask & trg_sub_mask
-    # 将布尔值转换为浮点数，并直接设置掩码值
     trg_mask = (1-trg_mask.half()) * -1e4+1
     return trg_mask
